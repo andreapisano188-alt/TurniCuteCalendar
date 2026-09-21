@@ -8,6 +8,19 @@ const ASSETS_TO_CACHE = [
   './icons/icon-512.png'
 ];
 
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (e) => {
+  return self.clients.claim();
+});
+
+self.addEventListener('fetch', (e) => {
+  // Gestore fetch minimo richiesto per i criteri PWA
+});
+
+
 // Installa: metti in cache solo i file locali (no risorse esterne)
 self.addEventListener('install', (event) => {
   event.waitUntil(
