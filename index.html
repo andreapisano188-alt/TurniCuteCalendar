@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TurniCute Calendar 🌸 - Gestione Turni Lavoro</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF9EAA">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TurniCute">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header Simpatico -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand">
+          <span class="brand-badge">🌸 TurniCute</span>
+          <h1 id="greeting-title">Ciao, Stella! ✨</h1>
+          <p class="subtitle">I tuoi turni sotto controllo, zero stress!</p>
+        </div>
+        <button class="btn btn-icon btn-glass" id="btn-info-iphone" title="Come installare su iPhone">
+          <i data-lucide="smartphone"></i>
+          <span class="btn-text-desktop">Su iPhone</span>
+        </button>
+      </div>
+
+      <!-- Barra navigazione Mese -->
+      <div class="month-navigator">
+        <button class="btn btn-icon btn-round" id="prev-month-btn">
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <div class="current-month-display">
+          <h2 id="current-month-text">Settembre 2026</h2>
+          <button class="btn btn-sm btn-subtle" id="today-btn">Oggi 📍</button>
+        </div>
+        <button class="btn btn-icon btn-round" id="next-month-btn">
+          <i data-lucide="chevron-right"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Toolbar Azioni Rapide -->
+    <div class="quick-toolbar">
+      <button class="btn btn-primary" id="btn-quick-fill">
+        <i data-lucide="wand-2"></i> Ciclo Turni Rapido
+      </button>
+      <button class="btn btn-secondary" id="btn-export-ical">
+        <i data-lucide="calendar"></i> Esporta per Apple Calendario (.ics)
+      </button>
+      <button class="btn btn-glass" id="btn-stats-toggle">
+        <i data-lucide="pie-chart"></i> Statistiche
+      </button>
+    </div>
+
+    <!-- Banner Statistiche Mese Sintetico -->
+    <section class="stats-summary-card">
+      <div class="stat-box stat-hours">
+        <div class="stat-icon"><i data-lucide="clock"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Ore Totali Mese</span>
+          <span class="stat-value" id="stat-total-hours">0h</span>
+        </div>
+      </div>
+
+      <div class="stat-box stat-earnings">
+        <div class="stat-icon"><i data-lucide="coins"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Stipendio Stimato</span>
+          <span class="stat-value" id="stat-total-earnings">€ 0,00</span>
+        </div>
+      </div>
+
+      <div class="stat-box stat-shifts">
+        <div class="stat-icon"><i data-lucide="briefcase"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">Turni Totali</span>
+          <span class="stat-value" id="stat-total-shifts">0 giorni</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Griglia Calendario -->
+    <main class="calendar-wrapper">
+      <div class="calendar-weekdays">
+        <div>Lun</div>
+        <div>Mar</div>
+        <div>Mer</div>
+        <div>Gio</div>
+        <div>Ven</div>
+        <div class="weekend-day">Sab</div>
+        <div class="weekend-day">Dom</div>
+      </div>
+      <div class="calendar-days-grid" id="calendar-grid">
+        <!-- Generato dinamicamente via JS -->
+      </div>
+    </main>
+
+    <!-- Legenda Turni Aggiornata -->
+    <footer class="shift-legend">
+      <div class="legend-item legend-mattina"><span class="dot"></span> ☀️ Mattina (07:00-14:00)</div>
+      <div class="legend-item legend-pomeriggio"><span class="dot"></span> 🌆 Pomeriggio (14:00-20:00)</div>
+      <div class="legend-item legend-notte"><span class="dot"></span> 🌙 Notte (20:00-07:00)</div>
+      <div class="legend-item legend-smontante"><span class="dot"></span> 💤 Smontante</div>
+      <div class="legend-item legend-ferie"><span class="dot"></span> 🌴 Ferie (6h)</div>
+      <div class="legend-item legend-riposo"><span class="dot"></span> 🏖️ Riposo</div>
+      <div class="legend-item legend-extra"><span class="dot"></span> ⏱️ Extra</div>
+    </footer>
+  </div>
+
+  <!-- MODALE: Modifica / Aggiungi Turno -->
+  <div class="modal-backdrop" id="modal-shift">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-shift-date-title">Turno per il Giorno</h3>
+        <button class="btn-close" id="btn-close-shift-modal">&times;</button>
+      </div>
+      <form id="shift-form">
+        <input type="hidden" id="shift-date-val">
+        
+        <label class="form-label">Scegli il tipo di turno:</label>
+        <div class="shift-presets-grid">
+          <button type="button" class="btn-preset active" data-type="mattina">
+            <span class="preset-emoji">☀️</span>
+            <span class="preset-name">Mattina</span>
+            <span class="preset-time">07:00 - 14:00</span>
+          </button>
+          <button type="button" class="btn-preset" data-type="pomeriggio">
+            <span class="preset-emoji">🌆</span>
+            <span class="preset-name">Pomeriggio</span>
+            <span class="preset-time">14:00 - 20:00</span>
+          </button>
+          <button type="button" class="btn-preset" data-type="notte">
+            <span class="preset-emoji">🌙</span>
+            <span class="preset-name">Notte</span>
+            <span class="preset-time">20:00 - 07:00</span>
+          </button>
+          <button type="button" class="btn-preset" data-type="smontante">
+            <span class="preset-emoji">💤</span>
+            <span class="preset-name">Smontante</span>
+            <span class="preset-time">Post Notte</span>
+          </button>
+          <button type="button" class="btn-preset" data-type="ferie">
+            <span class="preset-emoji">🌴</span>
+            <span class="preset-name">Ferie</span>
+            <span class="preset-time">Valgono 6 ore</span>
+          </button>
+          <button type="button" class="btn-preset" data-type="riposo">
+            <span class="preset-emoji">🏖️</span>
+            <span class="preset-name">Riposo</span>
+            <span class="preset-time">Tutto il giorno</span>
+          </button>
+          <button type="button" class="btn-preset" data-type="extra">
+            <span class="preset-emoji">⏱️</span>
+            <span class="preset-name">Extra / Altro</span>
+            <span class="preset-time">Personalizzato</span>
+          </button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="shift-start">Ora Inizio</label>
+            <input type="time" id="shift-start" class="form-input" value="07:00">
+          </div>
+          <div class="form-group">
+            <label for="shift-end">Ora Fine</label>
+            <input type="time" id="shift-end" class="form-input" value="14:00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="shift-break">Pausa (minuti)</label>
+            <input type="number" id="shift-break" class="form-input" value="0" min="0" step="5">
+          </div>
+          <div class="form-group">
+            <label for="shift-rate">Paga Oraria (€/ora)</label>
+            <input type="number" id="shift-rate" class="form-input" value="12.50" min="0" step="0.5">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="shift-notes">Note / Memo</label>
+          <input type="text" id="shift-notes" class="form-input" placeholder="Es. Cambio turno, Permesso, Note">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="btn-delete-shift">
+            <i data-lucide="trash-2"></i> Rimuovi Turno
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="check"></i> Salva Turno
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE: Ciclo Rapido (Pattern Generator) -->
+  <div class="modal-backdrop" id="modal-quick-fill">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✨ Generatore Ciclo Turni Rapido</h3>
+        <button class="btn-close" id="btn-close-quick-modal">&times;</button>
+      </div>
+      <form id="quick-fill-form">
+        <p class="form-help">Inserisci la tua sequenza di turni (es. Mattina, Pomeriggio, Notte, Smontante, Riposo) e applicala a tutto il mese!</p>
+        
+        <div class="form-group">
+          <label for="quick-start-date">Data Inizio Ciclo</label>
+          <input type="date" id="quick-start-date" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label for="quick-pattern-select">Modello Preimpostato o Personalizzato</label>
+          <select id="quick-pattern-select" class="form-input">
+            <option value="1M-1P-1N-1S-1R">Ciclo Ospedaliero / Turni: Mattina → Pomeriggio → Notte → Smontante → Riposo</option>
+            <option value="2M-2P-2N-2R">4 Quinte Classico: 2 Mattina → 2 Pomeriggio → 2 Notte → 2 Riposo</option>
+            <option value="5M-2R">Classico 5 giorni: 5 Mattina → 2 Riposo</option>
+            <option value="custom">Personalizzato...</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="custom-pattern-wrapper" style="display: none;">
+          <label for="custom-pattern-text">Sequenza Personalizzata (Usa M, P, N, S, F, R)</label>
+          <input type="text" id="custom-pattern-text" class="form-input" placeholder="Es: M,P,N,S,R">
+        </div>
+
+        <div class="form-group">
+          <label for="quick-num-repeats">Per quante settimane/mesi applicare?</label>
+          <select id="quick-num-repeats" class="form-input">
+            <option value="1">Questo mese</option>
+            <option value="2">2 Mesi</option>
+            <option value="3">3 Mesi</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-quick-fill">Annulla</button>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="wand-2"></i> Genera Turni
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE: Statistiche Dettagliate -->
+  <div class="modal-backdrop" id="modal-stats">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📊 Analisi e Statistiche Mese</h3>
+        <button class="btn-close" id="btn-close-stats-modal">&times;</button>
+      </div>
+      <div class="stats-detail-content">
+        <div class="stat-progress-group">
+          <div class="progress-label">
+            <span>☀️ Mattine (07:00-14:00): <strong id="count-mattina">0</strong></span>
+            <span id="hours-mattina">0h</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-mattina" id="bar-mattina"></div></div>
+        </div>
+
+        <div class="stat-progress-group">
+          <div class="progress-label">
+            <span>🌆 Pomeriggi (14:00-20:00): <strong id="count-pomeriggio">0</strong></span>
+            <span id="hours-pomeriggio">0h</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-pomeriggio" id="bar-pomeriggio"></div></div>
+        </div>
+
+        <div class="stat-progress-group">
+          <div class="progress-label">
+            <span>🌙 Notti (20:00-07:00): <strong id="count-notte">0</strong></span>
+            <span id="hours-notte">0h</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-notte" id="bar-notte"></div></div>
+        </div>
+
+        <div class="stat-progress-group">
+          <div class="progress-label">
+            <span>💤 Smontanti (Post Notte): <strong id="count-smontante">0</strong></span>
+            <span>-</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-smontante" id="bar-smontante"></div></div>
+        </div>
+
+        <div class="stat-progress-group">
+          <div class="progress-label">
+            <span>🌴 Ferie (6h/giorno): <strong id="count-ferie">0</strong></span>
+            <span id="hours-ferie">0h</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-ferie" id="bar-ferie"></div></div>
+        </div>
+
+        <div class="stat-progress-group">
+          <div class="progress-label">
+            <span>🏖️ Riposi: <strong id="count-riposo">0</strong></span>
+            <span>-</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill fill-riposo" id="bar-riposo"></div></div>
+        </div>
+
+        <div class="backup-restore-box">
+          <h4>💾 Salvataggio e Backup Dati</h4>
+          <p>Esporta o ripristina tutti i tuoi turni salvati in formato file JSON.</p>
+          <div class="backup-btns">
+            <button class="btn btn-sm btn-secondary" id="btn-export-json"><i data-lucide="download"></i> Scarica Backup JSON</button>
+            <label class="btn btn-sm btn-glass file-upload-label">
+              <i data-lucide="upload"></i> Ripristina Backup
+              <input type="file" id="input-import-json" accept=".json" style="display: none;">
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE: Guida iPhone -->
+  <div class="modal-backdrop" id="modal-iphone-info">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>📱 Come installare TurniCute su iPhone</h3>
+        <button class="btn-close" id="btn-close-iphone-modal">&times;</button>
+      </div>
+      <div class="iphone-guide-body">
+        <ol class="guide-steps">
+          <li>
+            <div class="step-num">1</div>
+            <div class="step-text">Apri il sito esclusivamente usando il browser <strong>SAFARI</strong> sul tuo iPhone (Chrome su iOS non supporta l'installazione).</div>
+          </li>
+          <li>
+            <div class="step-num">2</div>
+            <div class="step-text">Tocca l'icona di condivisione <i data-lucide="share"></i> in basso al centro nella barra di Safari.</div>
+          </li>
+          <li>
+            <div class="step-num">3</div>
+            <div class="step-text">Scorri le opzioni del menu verso il basso e seleziona <strong>"Aggiungi alla schermata Home" ➕</strong>.</div>
+          </li>
+          <li>
+            <div class="step-num">4</div>
+            <div class="step-text">Premi <strong>"Aggiungi"</strong> in alto a destra. L'icona 🌸 <strong>TurniCute</strong> comparirà sulla tua Home!</div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
