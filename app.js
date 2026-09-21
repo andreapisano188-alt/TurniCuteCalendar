@@ -533,8 +533,8 @@ function closeModal(id) {
 
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.log('ServiceWorker registration skipped in dev mode', err);
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.log('ServiceWorker registration error:', err);
     });
   }
 }
