@@ -14,6 +14,15 @@ const SHIFT_PRESETS = {
   riposo: { name: 'Riposo', emoji: '🏖️', start: '00:00', end: '00:00', breakMins: 0, rate: 0.00, cssClass: 'shift-riposo' },
   extra: { name: 'Extra', emoji: '⏱️', start: '09:00', end: '17:00', breakMins: 0, rate: 14.00, cssClass: 'shift-extra' }
 };
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.log('ServiceWorker registration error:', err);
+    });
+  }
+}
+
+navigator.serviceWorker.register('sw.js');
 
 const MONTH_NAMES_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
