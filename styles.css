@@ -638,13 +638,95 @@ body {
   cursor: pointer;
 }
 
-/* Mobile Adjustments */
-@media (max-width: 600px) {
-  body { padding: 4px; }
-  .app-container { padding: 12px; border-radius: 18px; }
-  .calendar-day-cell { min-height: 72px; padding: 4px; }
-  .shift-badge { padding: 2px 4px; font-size: 0.65rem; }
-  .shift-badge .shift-hours-text { display: none; }
-  .btn-text-desktop { display: none; }
-  .quick-toolbar .btn { font-size: 0.85rem; padding: 8px 12px; }
+/* ==========================================
+   Mobile & Responsive Adjustments (Fix Overflow)
+   ========================================== */
+
+/* Previene lo scorrimento orizzontale su tutta la pagina */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
 }
+
+/* Garantisce che il contenitore della griglia rispetti i limiti */
+.calendar-wrapper {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.calendar-days-grid,
+.calendar-weekdays {
+  width: 100%;
+  grid-template-columns: repeat(7, minmax(0, 1fr)); /* Impedisce alle celle di espandere le colonne */
+}
+
+/* Gestione celle su Mobile */
+.calendar-day-cell {
+  min-width: 0; /* Evita che il contenuto interno forzi la larghezza */
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  body { 
+    padding: 4px; 
+  }
+
+  .app-container { 
+    padding: 10px; 
+    border-radius: 16px; 
+  }
+
+  .calendar-wrapper {
+    padding: 6px;
+  }
+
+  .calendar-weekdays {
+    font-size: 0.75rem;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+  }
+
+  .calendar-days-grid {
+    gap: 3px; /* Riduce la spaziatura tra i giorni per risparmiare spazio */
+  }
+
+  .calendar-day-cell { 
+    min-height: 52px; /* Redotto per adattarsi a schermi verticali */
+    padding: 3px; 
+  }
+
+  .day-number {
+    font-size: 0.78rem;
+  }
+
+  /* Gestione Badge Turni su Mobile */
+  .shift-badge { 
+    padding: 2px 3px; 
+    font-size: 0.6rem; 
+    line-height: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shift-badge .shift-title {
+    gap: 2px;
+  }
+
+  .shift-badge .shift-hours-text { 
+    display: none; /* Nasconde l'orario su mobile per salvare spazio */
+  }
+
+  .btn-text-desktop { 
+    display: none; 
+  }
+
+  .quick-toolbar .btn { 
+    font-size: 0.8rem; 
+    padding: 8px 10px; 
+  }
+}
+
